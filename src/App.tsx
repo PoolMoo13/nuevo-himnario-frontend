@@ -8,7 +8,8 @@ interface Props {
 }
 
 export default function App ({ children }: Props) {
-  return <MantineProvider theme={theme}>
+  return <MantineProvider theme={theme}> 
+    <h1>Header</h1>
     {
       children
     }
