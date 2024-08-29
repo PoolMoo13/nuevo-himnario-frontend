@@ -41,3 +41,10 @@
       border-bottom-color: var(--mantine-color-blue-6);
     }
   }
+  .MultiSelect {
+    margin-top: 20%;
+  }
+  .Button {
+    margin-top: 20%;
+    margin-left: 28%;
+  }

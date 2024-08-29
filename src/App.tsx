@@ -1,10 +1,8 @@
-import { ReactNode, useState } from "react";
 import "@mantine/core/styles.css";
-import { MantineProvider, Container, Anchor, Group, Burger, Box, Image, Button } from "@mantine/core";
+import { MantineProvider, Container, Image } from "@mantine/core";
 import { theme } from "./theme";
-import { useDisclosure } from '@mantine/hooks';
-// import { MantineLogo } from '@mantinex/mantine-logo';
-import classes from './DoubleHeader.module.css';
+import classes from './Home.module.css';
+import { ReactNode } from "react";
 
 interface Props {
   children?: ReactNode
@@ -20,25 +18,14 @@ export default function App({ children }: Props) {
           src="https://raw.githubusercontent.com/PoolMoo13/himnario-jovenes/master/public/logo192.png"
           height={40}
         />
-        <h3> Himno 1 </h3>
+        <h3> Himnario 1 </h3>
       </Container>
     </header>
-    <Image
-      src="https://raw.githubusercontent.com/PoolMoo13/himnario-jovenes/master/public/logo192.png"
-      h={90}
-      w={409}
-      fit="contain"
-    />
+    <Container>
     {
       children
     }
-
-    <Button 
-    variant="light"
-    w={400}
-    >
-      Entrar
-    </Button>
+    </Container>
 
   </MantineProvider>;
 }
