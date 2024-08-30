@@ -1,11 +1,20 @@
-import { Autocomplete, Button, Container, Image } from "@mantine/core";
+import { Autocomplete, Button, Container, Group, Image, Modal, PasswordInput, Text } from "@mantine/core";
+import { useDisclosure } from '@mantine/hooks';
 import classes from './Home.module.css';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+interface Hymnal {
+    title: string;
+    slug: string;
+    password: string;
+}
+
 const Home = () => {
+    const [opened, { open, close }] = useDisclosure(false);
+    const [suggestions, setSuggestions] = useState<Hymnal[]>([]);
     const [value, setValue] = useState('');
-    const [suggestions, setSuggestions] = useState<{ title: string, slug: string }[]>([]);
+    const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
     const handleSearch = async (query: string) => {
@@ -18,7 +27,11 @@ const Home = () => {
             const response = await fetch(`http://localhost:3001/api/hymnals/search?title=${query}`);
             const result = await response.json();
             if (response.ok) {
-                const data = result.data.map((item: any) => ({ title: item.title, slug: item.slug }));
+                const data = result.data.map((item: Hymnal) => ({
+                    title: item.title,
+                    slug: item.slug,
+                    password: item.password
+                }));
                 setSuggestions(data);
             } else {
                 console.error('Error fetching data:', result.error);
@@ -33,12 +46,22 @@ const Home = () => {
         return selectedItem ? selectedItem.slug : null;
     };
 
-    const loader = () => {
-        const slug = getSlug();
-        if (slug) {
-            navigate(`/${slug}`);
+    const getPassword = () => {
+        const selectedItem = suggestions.find(item => item.title === value);
+        return selectedItem ? selectedItem.password : null;
+    };
+
+    const handleSubmitPassword = () => {
+        const savedPassword = getPassword();
+        if (savedPassword === password) {
+            const slug = getSlug();
+            if (slug) {
+                navigate(`/${slug}`);
+            } else {
+                alert('Slug not found');
+            }
         } else {
-            console.error('Slug not found');
+            alert("Contraseña incorrecta");
         }
     };
 
@@ -49,6 +72,7 @@ const Home = () => {
                 height={90}
                 width={409}
                 fit="contain"
+                alt="Logo"
             />
             <Container className={classes.MultiSelect}>
                 <Autocomplete
@@ -61,13 +85,50 @@ const Home = () => {
                     }}
                 />
             </Container>
+            <Modal
+                opened={opened}
+                onClose={close}
+                title="Contraseña requerida"
+                centered
+                size="md"
+            >
+                <Text size="sm" mt="md">
+                    Ingrese la contraseña para: <strong>{value}</strong>
+                </Text>
+
+                <PasswordInput
+                    variant="filled"
+                    size="md"
+                    radius="md"
+                    placeholder="Contraseña"
+                    mt="lg"
+                    value={password}
+                    onChange={(event) => setPassword(event.currentTarget.value)}
+                    required
+                />
+
+                <Group mt="xl">
+                    <Button variant="outline" color="red" onClick={close}>Cancelar</Button>
+                    <Button variant="filled" color="blue" onClick={handleSubmitPassword}>OK</Button>
+                </Group>
+            </Modal>
+
             <Container className={classes.Button}>
                 <Button
                     variant="light"
                     radius="md"
                     w={150}
                     h={45}
-                    onClick={loader}
+                    onClick={
+                        () => {
+                            if (!getPassword()) {
+                                handleSubmitPassword();
+                            } else {
+                                open();
+                            }
+                        }
+                    }
+                    disabled={!value}
                 >
                     Entrar
                 </Button>
