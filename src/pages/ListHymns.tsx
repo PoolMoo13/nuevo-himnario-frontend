@@ -51,11 +51,11 @@ const ListHymns = () => {
             <Autocomplete
                 placeholder="Buscar Himnos"
                 data={hymns.map(hymn => hymn.title)}
-                limit={4}
+                limit={5}
                 comboboxProps={{ dropdownPadding: 10 }}
                 radius={"md"}
                 variant="filled"
-                h={80}
+                h={70}
             />
 
             <div>
