@@ -1,38 +1,77 @@
+import { useState, useEffect } from "react";
 import { Autocomplete } from "@mantine/core";
+import { useNavigate, useLocation } from "react-router-dom"; 
 
 interface Hymn {
-    id: number;
+    id: string;
     title: string;
     lyrics: string;
 }
 
 const ListHymns = () => {
+    const [hymns, setHymns] = useState<Hymn[]>([]);
+    const navigate = useNavigate(); 
+    const location = useLocation(); 
 
     const getHimnarios = async () => {
+        try {
+            const url = `http://localhost:3001/api/hymnals/`;
+            const res = await fetch(url);
+            const { data } = await res.json();
 
-        const url = `http://localhost:3001/api/hymnals/`;
-        const res = await fetch(url);
-        const { data } = await res.json();
+            const himnos = data.map((hymn: any) => 
+                hymn.hymnns.map((h: { id: string, title: string, lyrics: string }) => ({
+                    id: h.id,
+                    title: h.title,
+                    lyrics: h.lyrics
+                }))
+            ).flat(); 
 
-        const himnos = data.map((hymn: Hymn) =>  ({
-            id: hymn._id,
-            description: hymn.description,
-            ids: hymn.hymnns.map((h: { id: string }) => String(h.id)).join(', ')
-        }));
-        console.log("🚀 ~ file: ListHymns.tsx:16 ~ himnos ~ himnos:", himnos);
-        console.log("🚀 ~ file: Home.tsx:11 ~ getHimnarios ~ data:", data);
+            const soloHimnos = Array.from(new Set(himnos.map(h => h.id)))
+                .map(id => himnos.find(h => h.id === id));
+
+            setHymns(soloHimnos);
+        } catch (error) {
+            console.error("No se pudo obtener los himnos: ", error);
+        }
     };
 
-    getHimnarios();
+    useEffect(() => {
+        getHimnarios();
+    }, []);
 
-    return (<>
-        <h1>Lista de himnos</h1>
+    const navegacionAlId = (id: string) => {
+        navigate(`${ location.pathname }/${ id }`);
+    };
 
-        <Autocomplete
-            placeholder="Buscar Himnos"
-            data={[ 'Himno 1', 'Himno 2', 'Himno 3' ]}
-        />
-    </>);
+    return (
+        <>
+            <h1>Lista de himnos</h1>
+
+            <Autocomplete
+                placeholder="Buscar Himnos"
+                data={hymns.map(hymn => hymn.title)}
+                limit={4}
+                comboboxProps={{ dropdownPadding: 10 }}
+                radius={"md"}
+                variant="filled"
+                h={80}
+            />
+
+            <div>
+                {hymns.map((hymn) => (
+                    <div key={hymn.id}>
+                        <a
+                            href="#"
+                            onClick={() => navegacionAlId(hymn.id)} 
+                        >
+                            {hymn.title}
+                        </a>
+                    </div>
+                ))}
+            </div>
+        </>
+    );
 };
 
 export default ListHymns;
