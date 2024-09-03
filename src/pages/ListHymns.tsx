@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Autocomplete } from "@mantine/core";
-import { useNavigate, useLocation } from "react-router-dom"; 
+import { Autocomplete, Table } from "@mantine/core";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface Hymn {
     id: string;
@@ -10,8 +10,8 @@ interface Hymn {
 
 const ListHymns = () => {
     const [hymns, setHymns] = useState<Hymn[]>([]);
-    const navigate = useNavigate(); 
-    const location = useLocation(); 
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const getHimnarios = async () => {
         try {
@@ -19,13 +19,13 @@ const ListHymns = () => {
             const res = await fetch(url);
             const { data } = await res.json();
 
-            const himnos = data.map((hymn: any) => 
+            const himnos = data.map((hymn: any) =>
                 hymn.hymnns.map((h: { id: string, title: string, lyrics: string }) => ({
                     id: h.id,
                     title: h.title,
                     lyrics: h.lyrics
                 }))
-            ).flat(); 
+            ).flat();
 
             const soloHimnos = Array.from(new Set(himnos.map(h => h.id)))
                 .map(id => himnos.find(h => h.id === id));
@@ -41,7 +41,14 @@ const ListHymns = () => {
     }, []);
 
     const navegacionAlId = (id: string) => {
-        navigate(`${ location.pathname }/${ id }`);
+        navigate(`${location.pathname}/${id}`);
+    };
+
+    const handleAutocompleteChange = (title: string) => {
+        const selectedHymn = hymns.find(hymn => hymn.title === title);
+        if (selectedHymn) {
+            navegacionAlId(selectedHymn.id);
+        }
     };
 
     return (
@@ -56,19 +63,28 @@ const ListHymns = () => {
                 radius={"md"}
                 variant="filled"
                 h={70}
+                onChange={handleAutocompleteChange}
             />
 
             <div>
-                {hymns.map((hymn) => (
-                    <div key={hymn.id}>
-                        <a
-                            href="#"
-                            onClick={() => navegacionAlId(hymn.id)} 
+            <Table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <tbody>
+                    {hymns.map((hymn, index) => (
+                        <tr 
+                            key={hymn.id} 
+                            style={{
+                                backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => navegacionAlId(hymn.id)}
                         >
-                            {hymn.title}
-                        </a>
-                    </div>
-                ))}
+                            <td style={{ padding: '10px 10px', color: "blue" }}>
+                                {hymn.title}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </Table>
             </div>
         </>
     );
