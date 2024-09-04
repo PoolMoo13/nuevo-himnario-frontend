@@ -69,7 +69,6 @@ const ShowHymn = () => {
             <Breadcrumbs separator="→" separatorMargin="md" mt="xs">
                 {items}
             </Breadcrumbs>
-            {/* You can now use the hymns state to render the hymns list or any additional content */}
         </>
     );
 };
