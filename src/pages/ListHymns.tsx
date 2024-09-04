@@ -1,27 +1,29 @@
 import { useState, useEffect } from "react";
 import { Autocomplete, Table } from "@mantine/core";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface Hymn {
     id: string;
     title: string;
     lyrics: string;
+    hymnns: { id: string, title: string, lyrics: string }[];
 }
 
 const ListHymns = () => {
     const [hymns, setHymns] = useState<Hymn[]>([]);
     const navigate = useNavigate();
-    const location = useLocation();
+    const { hymnalId } = useParams(); 
 
     const getHimnarios = async () => {
         try {
-            const pathnames = location.pathname.split('/');
-            const hymnario = pathnames[pathnames.length - 1];
-            const url = `http://localhost:3001/api/hymnals/search/slug?slug=${hymnario}`;
+            if (!hymnalId) {
+                return;
+            }  
+            const url = `http://localhost:3001/api/hymnals/search/slug?slug=${hymnalId}`;
             const res = await fetch(url);
             const { data } = await res.json();
 
-            const himnos = data.map((hymn: any) =>
+            const himnos = data.map((hymn: Hymn) =>
                 hymn.hymnns.map((h: { id: string, title: string, lyrics: string }) => ({
                     id: h.id,
                     title: h.title,
@@ -40,10 +42,10 @@ const ListHymns = () => {
 
     useEffect(() => {
         getHimnarios();
-    }, []);
+    }, [hymnalId]); 
 
     const navegacionAlId = (id: string) => {
-        navigate(`${location.pathname}/${id}`);
+        navigate(`${id}`);
     };
 
     const handleAutocompleteChange = (title: string) => {
@@ -67,24 +69,24 @@ const ListHymns = () => {
             />
 
             <div>
-            <Table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <tbody>
-                    {hymns.map((hymn, index) => (
-                        <tr 
-                            key={hymn.id} 
-                            style={{
-                                backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff',
-                                cursor: 'pointer'
-                            }}
-                            onClick={() => navegacionAlId(hymn.id)}
-                        >
-                            <td style={{ padding: '10px 10px', color: "blue" }}>
-                                {hymn.title}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </Table>
+                <Table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                        {hymns.map((hymn, index) => (
+                            <tr 
+                                key={hymn.id} 
+                                style={{
+                                    backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => navegacionAlId(hymn.id)}
+                            >
+                                <td style={{ padding: '10px 10px', color: "blue" }}>
+                                    {hymn.title}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
             </div>
         </>
     );
