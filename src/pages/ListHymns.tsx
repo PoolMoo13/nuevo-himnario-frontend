@@ -6,7 +6,12 @@ interface Hymn {
     id: string;
     title: string;
     lyrics: string;
-    hymnns: { id: string, title: string, lyrics: string }[];
+}
+interface Hymnal {
+    title: string;
+    password: string;
+    slug: string;
+    hymnns: Hymn[];
 }
 
 const ListHymns = () => {
@@ -23,18 +28,15 @@ const ListHymns = () => {
             const res = await fetch(url);
             const { data } = await res.json();
 
-            const himnos = data.map((hymn: Hymn) =>
-                hymn.hymnns.map((h: { id: string, title: string, lyrics: string }) => ({
-                    id: h.id,
-                    title: h.title,
-                    lyrics: h.lyrics
+            const himnos = data.map((hymnal: Hymnal) =>
+                hymnal.hymnns.map(( hymn: Hymn ) => ({
+                    id: hymn.id,
+                    title: hymn.title,
+                    lyrics: hymn.lyrics
                 }))
             ).flat();
 
-            const soloHimnos = Array.from(new Set(himnos.map(h => h.id)))
-                .map(id => himnos.find(h => h.id === id));
-
-            setHymns(soloHimnos);
+            setHymns(himnos);
         } catch (error) {
             console.error("No se pudo obtener los himnos: ", error);
         }
