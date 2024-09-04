@@ -82,7 +82,7 @@ const ListHymns = () => {
                                 }}
                                 onClick={() => navegacionAlId(hymn.id)}
                             >
-                                <td style={{ padding: '10px 10px', color: "blue" }}>
+                                <td style={{ padding: '10px 10px', color: "#4499E9" }}>
                                     {hymn.title}
                                 </td>
                             </tr>
