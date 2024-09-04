@@ -15,8 +15,11 @@ const ListHymns = () => {
 
     const getHimnarios = async () => {
         try {
-            const url = `http://localhost:3001/api/hymnals/`;
+            const pathnames = location.pathname.split('/');
+            const hymnario = pathnames[pathnames.length - 1];
+            const url = `http://localhost:3001/api/hymnals/search/slug?slug=${hymnario}`;
             const res = await fetch(url);
+            console.log("🚀 ~ file: ListHymns.tsx:22 ~ getHimnarios ~ url:", url)
             const { data } = await res.json();
 
             const himnos = data.map((hymn: any) =>
