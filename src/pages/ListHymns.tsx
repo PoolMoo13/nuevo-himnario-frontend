@@ -1,38 +1,97 @@
-import { Autocomplete } from "@mantine/core";
+import { useState, useEffect } from "react";
+import { Autocomplete, Table } from "@mantine/core";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface Hymn {
-    id: number;
+    id: string;
     title: string;
     lyrics: string;
 }
+interface Hymnal {
+    title: string;
+    password: string;
+    slug: string;
+    hymnns: Hymn[];
+}
 
 const ListHymns = () => {
+    const [hymns, setHymns] = useState<Hymn[]>([]);
+    const navigate = useNavigate();
+    const { hymnalId } = useParams(); 
 
     const getHimnarios = async () => {
+        try {
+            if (!hymnalId) {
+                return;
+            }  
+            const url = `http://localhost:3001/api/hymnals/search/slug?slug=${hymnalId}`;
+            const res = await fetch(url);
+            const { data } = await res.json();
 
-        const url = `http://localhost:3001/api/hymnals/`;
-        const res = await fetch(url);
-        const { data } = await res.json();
+            const himnos = data.map((hymnal: Hymnal) =>
+                hymnal.hymnns.map(( hymn: Hymn ) => ({
+                    id: hymn.id,
+                    title: hymn.title,
+                    lyrics: hymn.lyrics
+                }))
+            ).flat();
 
-        const himnos = data.map((hymn: Hymn) =>  ({
-            id: hymn._id,
-            description: hymn.description,
-            ids: hymn.hymnns.map((h: { id: string }) => String(h.id)).join(', ')
-        }));
-        console.log("🚀 ~ file: ListHymns.tsx:16 ~ himnos ~ himnos:", himnos);
-        console.log("🚀 ~ file: Home.tsx:11 ~ getHimnarios ~ data:", data);
+            setHymns(himnos);
+        } catch (error) {
+            console.error("No se pudo obtener los himnos: ", error);
+        }
     };
 
-    getHimnarios();
+    useEffect(() => {
+        getHimnarios();
+    }, [hymnalId]); 
 
-    return (<>
-        <h1>Lista de himnos</h1>
+    const navegacionAlId = (id: string) => {
+        navigate(`${id}`);
+    };
 
-        <Autocomplete
-            placeholder="Buscar Himnos"
-            data={[ 'Himno 1', 'Himno 2', 'Himno 3' ]}
-        />
-    </>);
+    const handleAutocompleteChange = (title: string) => {
+        const selectedHymn = hymns.find(hymn => hymn.title === title);
+        if (selectedHymn) {
+            navegacionAlId(selectedHymn.id);
+        }
+    };
+
+    return (
+        <>
+            <Autocomplete
+                placeholder="Buscar Himnos"
+                data={hymns.map(hymn => hymn.title)}
+                limit={5}
+                comboboxProps={{ dropdownPadding: 10 }}
+                radius={"md"}
+                variant="filled"
+                h={70}
+                onChange={handleAutocompleteChange}
+            />
+
+            <div>
+                <Table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                        {hymns.map((hymn, index) => (
+                            <tr 
+                                key={hymn.id} 
+                                style={{
+                                    backgroundColor: index % 2 === 0 ? '#f9f9f9' : '#ffffff',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => navegacionAlId(hymn.id)}
+                            >
+                                <td style={{ padding: '10px 10px', color: "#4499E9" }}>
+                                    {hymn.title}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
+        </>
+    );
 };
 
 export default ListHymns;
