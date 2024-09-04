@@ -19,7 +19,6 @@ const ListHymns = () => {
             const hymnario = pathnames[pathnames.length - 1];
             const url = `http://localhost:3001/api/hymnals/search/slug?slug=${hymnario}`;
             const res = await fetch(url);
-            console.log("🚀 ~ file: ListHymns.tsx:22 ~ getHimnarios ~ url:", url)
             const { data } = await res.json();
 
             const himnos = data.map((hymn: any) =>
@@ -56,8 +55,6 @@ const ListHymns = () => {
 
     return (
         <>
-            <h1>Lista de himnos</h1>
-
             <Autocomplete
                 placeholder="Buscar Himnos"
                 data={hymns.map(hymn => hymn.title)}
