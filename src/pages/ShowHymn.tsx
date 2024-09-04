@@ -1,74 +1,77 @@
 import { useState, useEffect } from 'react';
-import { Breadcrumbs, Anchor } from '@mantine/core';
-import { useLocation } from 'react-router-dom';
+import { Anchor, Breadcrumbs } from '@mantine/core';
+import { Link, useParams } from 'react-router-dom';
 
 interface Hymn {
     id: string;
     title: string;
     lyrics: string;
 }
-
+interface Hymnal {
+    title: string;
+    password: string;
+    slug: string;
+    hymnns: Hymn[];
+}
 const ShowHymn = () => {
     const [hymns, setHymns] = useState<Hymn[]>([]);
-    const pathname = useLocation().pathname;
+    const { hymnId, hymnalId } = useParams<{ hymnId: string; hymnalId: string }>();
 
     const getHimnarios = async () => {
         try {
-            const url = `http://localhost:3001/api/hymnals/`;
+            if (!hymnalId) {
+                return;
+            }
+            const url = `http://localhost:3001/api/hymnals/search/slug?slug=${hymnalId}`;
             const res = await fetch(url);
             const { data } = await res.json();
 
-            const himnos = data.map((hymn: any) =>
-                hymn.hymnns.map((h: { id: string, title: string, lyrics: string }) => ({
-                    id: h.id,
-                    title: h.title,
-                    lyrics: h.lyrics
+            const himnos = data.map((hymnal: Hymnal) =>
+                hymnal.hymnns.map((hymn: Hymn) => ({
+                    id: hymn.id,
+                    title: hymn.title,
+                    lyrics: hymn.lyrics
                 }))
             ).flat();
 
-            const soloHimnos = Array.from(new Set(himnos.map(h => h.id)))
-                .map(id => himnos.find(h => h.id === id));
-
-            setHymns(soloHimnos);
-
+            setHymns(himnos);
         } catch (error) {
             console.error("No se pudo obtener los himnos: ", error);
         }
     };
 
-
     useEffect(() => {
         getHimnarios();
     }, []);
-    
-    const id = pathname.split('/').pop();
-    
-    const buscarHimnoPorId = (id: string): string => {
-        const himno = hymns.find(hymn => hymn.id === id);
-        console.log("🚀 ~ file: ShowHymn.tsx:46 ~ buscarHimnoPorId ~ himno:", himno);
-        return himno ? himno.title : '';
+
+    const buscarHimnoPorId = (id: string): Hymn | undefined => {
+        return hymns.find(hymn => hymn.id === id);
     };
-    const tituloHimno: string = buscarHimnoPorId(id);
 
-    const himnario = pathname.split('/');
-    const getUrlHimnario = himnario[himnario.length - 2];
-
+    const himno = buscarHimnoPorId(hymnId || '');
+    const tituloHimno: string = himno ? himno.title : 'no se encontró el himno';
 
     const items = [
-        { title: 'Inicio', href: `http://localhost:5173/${getUrlHimnario}` },
-        { title: `${tituloHimno}`, href: '#' },
+        { title: 'Inicio', path: `/${hymnalId}` },
+        { title: `${tituloHimno}`, path: `#` },
     ].map((item, index) => (
-        <Anchor href={item.href} key={index}>
+        <Anchor component={Link} to={item.path} key={index}>
             {item.title}
         </Anchor>
     ));
 
     return (
         <>
-            <h1>Show Hymn</h1>
+            <h1>{tituloHimno}</h1>
             <Breadcrumbs separator="→" separatorMargin="md" mt="xs">
                 {items}
             </Breadcrumbs>
+            {himno && (
+                <div>
+                    <h2>Letra del himno:</h2>
+                    <p>{himno.lyrics}</p>
+                </div>
+            )}
         </>
     );
 };
