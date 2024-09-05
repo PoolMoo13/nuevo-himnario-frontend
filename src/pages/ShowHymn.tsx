@@ -1,4 +1,4 @@
-import { Anchor, Breadcrumbs } from '@mantine/core';
+import { Anchor, Breadcrumbs, Button } from '@mantine/core';
 import { Link, useParams } from 'react-router-dom';
 
 interface Hymn {
@@ -11,27 +11,41 @@ const ShowHymn = () => {
 
     const hymnsData = localStorage.getItem('hymns');
     const hymns: Hymn[] = hymnsData ? JSON.parse(hymnsData) : [];
-    console.log("🚀 ~ file: ShowHymn.tsx:13 ~ ShowHymn ~ hymns:", hymns);
 
-    const { hymnId } = useParams<{ hymnId: string }>();
-    
+    const { hymnalId, hymnId } = useParams<{ hymnalId: string, hymnId: string }>();
+
+    const hymn = hymns.find(h => h.id.toString() === hymnId);
+
+
+    if (!hymn || !hymn.lyrics) {
+        console.error(`Himno con ID ${hymnId} no encontrado o sin letra.`);
+        return (
+            <>
+                <p>El himno no está disponible. Busque otro himno</p>
+                <Button
+                    variant='light'
+                    radius='md'
+                    onClick={() => window.history.back()}
+                >
+                    Volver
+                </Button>
+            </>
+        );
+    }
 
     return (
         <>
-            <h1>{tituloHimno}</h1>
             <Breadcrumbs separator="/" separatorMargin="md" mt="xs">
-                <Anchor component={Link} to="/">
+                <Anchor component={Link} to={ `/${hymnalId}` }>
                     Inicio
                 </Anchor>
-                <Anchor>
-                    {tituloHimno}
-                </Anchor>
+                {hymn && <Anchor>{hymn.title}</Anchor>}
             </Breadcrumbs>
-            {himno && (
-                <div>
-                    <h2>Letra del himno:</h2>
-                    <p>{himno.lyrics}</p>
-                </div>
+            <h1>{hymn ? hymn.title : "Himno no encontrado"}</h1>
+            {hymn ? (
+                <div dangerouslySetInnerHTML={{ __html: hymn.lyrics }} />
+            ) : (
+                <p>El himno no está disponible.</p>
             )}
         </>
     );
