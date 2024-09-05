@@ -16,6 +16,7 @@ interface Hymnal {
 
 const ListHymns = () => {
     const [hymns, setHymns] = useState<Hymn[]>([]);
+    localStorage.setItem('hymns', JSON.stringify(hymns));    
     const navigate = useNavigate();
     const { hymnalId } = useParams(); 
 
