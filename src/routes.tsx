@@ -6,8 +6,8 @@ import ListHymns from "./pages/ListHymns";
 import ShowHymn from "./pages/ShowHymn";
 import Home from "./pages/Home";
 import Admin from "./pages/admin/Admin";
-import Titulo from "./pages/admin/EditarTituloHimnario";
-import SeleccionHimno from "./pages/admin/SeleccionHimno";
+import Titulo from "./pages/admin/EditarHimnario";
+import SeleccionHimno from "./pages/admin/VerHimnario";
 import EditHimno from "./pages/admin/EditarHimno";
 
 const AppRoutes = () => (
