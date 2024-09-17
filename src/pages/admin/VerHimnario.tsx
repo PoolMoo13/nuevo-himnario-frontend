@@ -2,7 +2,7 @@ import { Button } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 
 
-const SeleccionHimno = () => {
+const VerHimnario = () => {
     const navigate = useNavigate();
 
     const navegacionEdit = () => {
@@ -19,4 +19,4 @@ const SeleccionHimno = () => {
     );
 }
 
-export default SeleccionHimno
+export default VerHimnario

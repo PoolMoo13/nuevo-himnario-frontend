@@ -6,8 +6,8 @@ import ListHymns from "./pages/ListHymns";
 import ShowHymn from "./pages/ShowHymn";
 import Home from "./pages/Home";
 import Admin from "./pages/admin/Admin";
-import Titulo from "./pages/admin/EditarHimnario";
-import SeleccionHimno from "./pages/admin/VerHimnario";
+import EditarHimnario from "./pages/admin/EditarHimnario";
+import VerHimnario from "./pages/admin/VerHimnario";
 import EditHimno from "./pages/admin/EditarHimno";
 
 const AppRoutes = () => (
@@ -16,8 +16,8 @@ const AppRoutes = () => (
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/:hymnalId" element={<Titulo />} />
-                <Route path="/admin/:hymnalId/:hymnalId" element={<SeleccionHimno />} />
+                <Route path="/admin/:hymnalId" element={<EditarHimnario />} />
+                <Route path="/admin/:hymnalId/:hymnalId" element={<VerHimnario />} />
                 <Route path="/admin/:hymnalId/:hymnalId/edit" element={<EditHimno />} />
 
                 <Route path="/:hymnalId" element={<ListHymns />} />

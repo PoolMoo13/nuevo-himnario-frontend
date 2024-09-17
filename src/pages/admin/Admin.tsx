@@ -14,7 +14,7 @@ import classes from "./Admin.module.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconInfoCircle } from "@tabler/icons-react";
-
+const ApiUrl = import.meta.env.VITE_API_URL;
 interface Hymnal {
     title: string;
     slug: string;
@@ -31,6 +31,8 @@ const Admin = () => {
     const [alertVisible, setAlertVisible] = useState(false);
     const navigate = useNavigate();
 
+
+
     const handleSearch = async (query: string) => {
         if (!query) {
             setSuggestions([]);
@@ -38,19 +40,23 @@ const Admin = () => {
         }
 
         try {
-            const response = await fetch(
-                `http://localhost:3001/api/hymnals/search?title=${query}`
-            );
-            const result = await response.json();
-            if (response.ok) {
-                const data = result.data.map((item: Hymnal) => ({
-                    title: item.title,
-                    slug: item.slug,
-                    password: item.password,
-                }));
-                setSuggestions(data);
+            const response = await fetch(`${ApiUrl}?title=${query}`);
+            const contentType = response.headers.get("content-type");
+
+            if (contentType && contentType.includes("application/json")) {
+                const result = await response.json();
+                if (response.ok) {
+                    const data = result.data.map((item: Hymnal) => ({
+                        title: item.title,
+                        slug: item.slug,
+                        password: item.password,
+                    }));
+                    setSuggestions(data);
+                } else {
+                    console.error("Error fetching data:", result.error);
+                }
             } else {
-                console.error("Error fetching data:", result.error);
+                console.error("Error: Received non-JSON response");
             }
         } catch (error) {
             console.error("Error:", error);

@@ -1,7 +1,7 @@
 import { Button } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
 
-const Titulo = () => {
+const EditarHimnario = () => {
   const navigate = useNavigate();
 
   const navegacionEdit = () => {
@@ -10,7 +10,7 @@ const Titulo = () => {
 
   return (
     <>
-      <div>Titulo del Himnario a Editar</div>
+      <div>EditarHimnario del Himnario a Editar</div>
       <Button onClick={navegacionEdit}>
         Guardar
       </Button>
@@ -18,4 +18,4 @@ const Titulo = () => {
   );
 }
 
-export default Titulo;
+export default EditarHimnario;
