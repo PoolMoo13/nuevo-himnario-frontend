@@ -3,6 +3,8 @@ import { useDisclosure } from '@mantine/hooks';
 import classes from './Home.module.css';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+const ApiUrl = import.meta.env.VITE_API_URL;
+
 
 interface Hymnal {
     title: string;
@@ -24,7 +26,7 @@ const Home = () => {
         }
 
         try {
-            const response = await fetch(`http://localhost:3001/api/hymnals/search?title=${query}`);
+            const response = await fetch(`${ ApiUrl }?title=${query}`);
             const result = await response.json();
             if (response.ok) {
                 const data = result.data.map((item: Hymnal) => ({
