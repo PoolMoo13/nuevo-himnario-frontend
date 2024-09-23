@@ -19,6 +19,7 @@ interface Hymnal {
     title: string;
     slug: string;
     password: string;
+    passwordEdit?: string;
 }
 
 const Admin = () => {
@@ -38,18 +39,26 @@ const Admin = () => {
             setSuggestions([]);
             return;
         }
-
+    
         try {
             const response = await fetch(`${ApiUrl}?title=${query}`);
             const contentType = response.headers.get("content-type");
-
+    
             if (contentType && contentType.includes("application/json")) {
                 const result = await response.json();
                 if (response.ok) {
-                    const data = result.data.map((item: Hymnal) => ({
+                    const uniqueTitles = new Set();
+                    const data = result.data.filter((item: Hymnal) => {
+                        if (!uniqueTitles.has(item.title)) {
+                            uniqueTitles.add(item.title);
+                            return true;
+                        }
+                        return false;
+                    }).map((item: Hymnal) => ({
                         title: item.title,
                         slug: item.slug,
                         password: item.password,
+                        passwordEdit: item.passwordEdit,
                     }));
                     setSuggestions(data);
                 } else {
@@ -62,6 +71,7 @@ const Admin = () => {
             console.error("Error:", error);
         }
     };
+    
 
     const getSlug = () => {
         const selectedItem = suggestions.find((item) => item.title === value);
@@ -70,7 +80,7 @@ const Admin = () => {
 
     const getPassword = () => {
         const selectedItem = suggestions.find((item) => item.title === value);
-        return selectedItem ? selectedItem.password : null;
+        return selectedItem ? selectedItem.passwordEdit : null;
     };
 
     const handleSubmitPassword = () => {
