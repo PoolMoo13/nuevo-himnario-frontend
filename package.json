@@ -10,16 +10,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "7.12.1",
+    "@mantine/core": "^7.12.2",
+    "@mantine/form": "^7.12.2",
     "@mantine/hooks": "7.12.1",
     "@mantinex/mantine-logo": "^1.0.1",
     "@tabler/icons-react": "^3.16.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.1"
+    "react-router-dom": "^6.26.2"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
+    "@types/react": "^18",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
