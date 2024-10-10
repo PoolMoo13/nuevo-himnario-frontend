@@ -112,7 +112,7 @@ const Admin = () => {
             />
             <Container className={classes.MultiSelect}>
                 <Autocomplete
-                    placeholder="Crear Himnario"
+                    placeholder="Selecciona Himnario O Crea uno Nuevo"
                     data={suggestions.map((item) => item.title)}
                     value={value}
                     onChange={(val) => {

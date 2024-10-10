@@ -1,7 +1,15 @@
-import { Button, Group, TextInput, PasswordInput, Container, Title, Paper, Stack } from "@mantine/core";
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react';
 import { useForm } from '@mantine/form';
+import { Button, Group, TextInput, PasswordInput, Container, Title, Paper, Stack } from "@mantine/core";
+import { useLocation, useNavigate } from "react-router-dom";
+interface FormValues {
+  title: string;
+  slug: string;
+  password: string;
+  passwordEdit: string;
+  description: string;
+  _id: string;
+}
 
 const ApiUrl = import.meta.env.VITE_API_URL;
 
@@ -10,14 +18,9 @@ const EditarHimnario = () => {
   const location = useLocation();
   const slugEdit = location.pathname.split("/").pop();
 
-  // metodo para la pagina de crear
-
-  const [name, setName] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-
-  const handleCrear = (event) => {
-    event.preventDefault();
-  };
+  const [slugExists, setSlugExists] = useState(false);
+  const [checkingSlug, setCheckingSlug] = useState(false);
+  const [originalSlug, setOriginalSlug] = useState('');
 
   const form = useForm({
     initialValues: {
@@ -28,19 +31,49 @@ const EditarHimnario = () => {
       description: '',
       _id: '',
     },
+    validate: {
+      slug: (value) => {
+        if (slugExists && value !== originalSlug) {
+          return 'Este slug ya existe, elige uno diferente.';
+        }
+        return null;
+      },
+    },
   });
+
+  useEffect(() => {
+    if (slugEdit && slugEdit !== 'crear') {
+      handleSearch(slugEdit);
+    }
+  }, [slugEdit]);
+
+  useEffect(() => {
+    const createSlug = (title: string) =>
+      title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const newSlug = createSlug(form.values.title);
+    form.setFieldValue('slug', newSlug);
+  }, [form.values.title]);
+
+  useEffect(() => {
+    if (form.values.slug && form.values.slug !== originalSlug) {
+      const debounceTimeout = setTimeout(() => {
+        checkSlug(form.values.slug);
+      }, 500);
+
+      return () => clearTimeout(debounceTimeout);
+    }
+  }, [form.values.slug]);
 
   const handleSearch = async (slug: string) => {
     if (!slug) return;
-
     try {
       const response = await fetch(`${ApiUrl}/search/slug?slug=${slug}`);
       const contentType = response.headers.get("content-type");
-
       if (contentType && contentType.includes("application/json")) {
         const result = await response.json();
         if (response.ok && result.data.length > 0) {
           form.setValues(result.data[0]);
+          setOriginalSlug(result.data[0].slug);
         } else {
           console.error("Error fetching data:", result.error);
         }
@@ -48,41 +81,61 @@ const EditarHimnario = () => {
         console.error("Error: Received non-JSON response");
       }
     } catch (error) {
-      console.error("Network error:", error);
+      console.error("Syntax error:", error);
     }
   };
 
-  useEffect(() => {
-    if (slugEdit != crear) {
-      handleSearch(slugEdit);
+  const checkSlug = async (slug: string) => {
+    if (!slug) return;
+    setCheckingSlug(true);
+    try {
+      const response = await fetch(`${ApiUrl}/search/slug?slug=${slug}`);
+      const result = await response.json();
+      if (response.ok && result.data.length > 0) {
+        setSlugExists(true);
+        form.validateField('slug');
+      } else {
+        setSlugExists(false);
+        form.validateField('slug');
+      }
+    } catch (error) {
+      console.error("Error checking slug:", error);
     }
-  }, [slugEdit]);
+    setCheckingSlug(false);
+  };
 
-  const handleSubmit = async (values) => {
-    console.log("🚀 ~ file: EditarHimnario.tsx:52 ~ handleSubmit ~ values:", values);
 
-    const payload = {
+  const handleSubmit = async (values: FormValues) => {
+    const method = slugEdit === 'crear' ? 'POST' : 'PATCH';
+    const url = slugEdit === 'crear' ? `${ApiUrl}` : `${ApiUrl}/${values._id}`;
+    const payload = slugEdit === 'crear' ? {
+      slug: values.slug,
+      title: values.title,
+      description: values.description,
+      password: values.password,
+      passwordEdit: values.passwordEdit,
+      hymnns: [],
+    } : {
       data: {
-        title: values.title,
         slug: values.slug,
+        title: values.title,
         description: values.description,
-        passwordEdit: values.passwordEdit,
         password: values.password,
+        passwordEdit: values.passwordEdit,
+        hymnns: [],
       },
     };
 
-    const url = `${ApiUrl}/${values._id}`;
     try {
       const response = await fetch(url, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error("Server error:", errorText);
         throw new Error(errorText || 'Server responded with an error');
       }
 
@@ -97,49 +150,45 @@ const EditarHimnario = () => {
   return (
     <Container size="sm" my="xl">
       <Paper shadow="xl" radius="md" p="lg" >
-        <Title align="center" order={2} mb="lg" style={{ color: '#3b3b3b' }}>
-          Editar Himnario
+        <Title order={2} mb="lg" style={{ color: '#3b3b3b', textAlign: 'center' }}>
+          {slugEdit === 'crear' ? 'Crear Himnario' : 'Editar Himnario'}
         </Title>
         <form onSubmit={form.onSubmit(handleSubmit)}>
-          <Stack spacing="md">
+          <Stack gap="md">
             <TextInput
               withAsterisk
               label="Título"
               placeholder="Ingresa el título del himnario"
               {...form.getInputProps('title')}
-              style={{ fontWeight: 500 }}
             />
             <TextInput
               withAsterisk
               label="Slug"
               placeholder="Ingresa el slug del himnario"
               {...form.getInputProps('slug')}
-              style={{ fontWeight: 500 }}
+              error={form.errors.slug}
             />
+            {checkingSlug && <div>Verificando disponibilidad del slug...</div>}
             <TextInput
               label="Descripción"
               placeholder="Ingrese una descripción para el himnario"
               {...form.getInputProps('description')}
-              style={{ fontWeight: 500 }}
             />
             <PasswordInput
               label="Contraseña para ingresar al Himnario"
               placeholder="Contraseña para ingresar al himnario"
               {...form.getInputProps('password')}
-              style={{ fontWeight: 500 }}
             />
             <PasswordInput
               label="Contraseña para editar el himnario"
               placeholder="Contraseña para editar el himnario"
               {...form.getInputProps('passwordEdit')}
-              style={{ fontWeight: 500 }}
             />
-            <Group position="center" mt="md">
+            <Group align="center" mt="md">
               <Button
-                variant="gradient"
-                gradient={{ from: 'indigo', to: 'cyan' }}
+                variant="light"
                 type="submit"
-                disabled={form.values.title === '' || form.values.slug === ''}
+                disabled={slugExists && form.values.slug !== originalSlug || checkingSlug}
               >
                 Guardar
               </Button>
@@ -149,6 +198,6 @@ const EditarHimnario = () => {
       </Paper>
     </Container>
   );
-}
+};
 
 export default EditarHimnario;
