@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useForm } from '@mantine/form';
-import { Button, Group, TextInput, PasswordInput, Container, Title, Paper, Stack } from "@mantine/core";
+import { Button, Group, TextInput, PasswordInput, Container, Title, Paper, Stack, Alert } from "@mantine/core";
 import { useLocation, useNavigate } from "react-router-dom";
+import { IconAlertCircle } from '@tabler/icons-react'; 
+
 interface FormValues {
   title: string;
   slug: string;
@@ -21,6 +23,7 @@ const EditarHimnario = () => {
   const [slugExists, setSlugExists] = useState(false);
   const [checkingSlug, setCheckingSlug] = useState(false);
   const [originalSlug, setOriginalSlug] = useState('');
+  const [alertVisible, setAlertVisible] = useState(false); 
 
   const form = useForm({
     initialValues: {
@@ -40,6 +43,10 @@ const EditarHimnario = () => {
       },
     },
   });
+
+  useEffect(() => {
+    setAlertVisible(false); 
+  }, []);
 
   useEffect(() => {
     if (slugEdit && slugEdit !== 'crear') {
@@ -103,11 +110,18 @@ const EditarHimnario = () => {
     }
     setCheckingSlug(false);
   };
-
+  
 
   const handleSubmit = async (values: FormValues) => {
+    if (!values.title || !values.slug) {
+      setAlertVisible(true);
+      return; 
+    }
+
     const method = slugEdit === 'crear' ? 'POST' : 'PATCH';
     const url = slugEdit === 'crear' ? `${ApiUrl}` : `${ApiUrl}/${values._id}`;
+    
+    // Payload solo incluye los campos necesarios
     const payload = slugEdit === 'crear' ? {
       slug: values.slug,
       title: values.title,
@@ -122,7 +136,6 @@ const EditarHimnario = () => {
         description: values.description,
         password: values.password,
         passwordEdit: values.passwordEdit,
-        hymnns: [],
       },
     };
 
@@ -141,15 +154,22 @@ const EditarHimnario = () => {
 
       const data = await response.json();
       console.log('Success:', data);
-      navigate('edit');
+      setAlertVisible(false); 
+      await handleSearch(values.slug);
+
+      const newPath = location.pathname.replace(slugEdit === 'crear' ? 'crear' : originalSlug, `${values.slug}/hymnns`);
+      navigate(newPath, { replace: true });
+      
+
     } catch (error) {
       console.error("Error during submission:", error);
     }
   };
 
+
   return (
     <Container size="sm" my="xl">
-      <Paper shadow="xl" radius="md" p="lg" >
+      <Paper shadow="xl" radius="md" p="lg">
         <Title order={2} mb="lg" style={{ color: '#3b3b3b', textAlign: 'center' }}>
           {slugEdit === 'crear' ? 'Crear Himnario' : 'Editar Himnario'}
         </Title>
@@ -164,7 +184,7 @@ const EditarHimnario = () => {
             <TextInput
               withAsterisk
               label="Slug"
-              placeholder="Ingresa el slug del himnario"
+              placeholder="..."
               {...form.getInputProps('slug')}
               error={form.errors.slug}
             />
@@ -188,7 +208,7 @@ const EditarHimnario = () => {
               <Button
                 variant="light"
                 type="submit"
-                disabled={slugExists && form.values.slug !== originalSlug || checkingSlug}
+                // disabled={slugExists && form.values.slug !== originalSlug || checkingSlug}
               >
                 Guardar
               </Button>
@@ -196,6 +216,40 @@ const EditarHimnario = () => {
           </Stack>
         </form>
       </Paper>
+      {alertVisible && (
+        <Alert
+          variant="light"
+          radius="md"
+          color="blue"
+          title="Campos"
+          icon={<IconAlertCircle size={16} />}
+          withCloseButton
+          onClose={() => setAlertVisible(false)}
+          style={{
+            position: 'fixed',
+            right: '15px',
+            left: '15px',
+            animation: 'slideInFromRight 0.5s ease forwards',
+            padding: '20px',
+            margin: '10px',
+            bottom: '90px',
+          }}
+        >
+          Todos los campos obligatorios deben estar completos.
+        </Alert>
+      )}
+      <style>{`
+        @keyframes slideInFromRight {
+          0% {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          100% {
+            transform: translateX(0);
+            opacity: 1; 
+          }
+        }
+      `}</style>
     </Container>
   );
 };

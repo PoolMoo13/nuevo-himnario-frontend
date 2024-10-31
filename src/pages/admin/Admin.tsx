@@ -14,7 +14,9 @@ import classes from "./Admin.module.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconInfoCircle } from "@tabler/icons-react";
+
 const ApiUrl = import.meta.env.VITE_API_URL;
+
 interface Hymnal {
     title: string;
     slug: string;
@@ -24,15 +26,12 @@ interface Hymnal {
 
 const Admin = () => {
     const icon = <IconInfoCircle />;
-
     const [opened, { open, close }] = useDisclosure(false);
     const [suggestions, setSuggestions] = useState<Hymnal[]>([]);
     const [value, setValue] = useState("");
     const [password, setPassword] = useState("");
     const [alertVisible, setAlertVisible] = useState(false);
     const navigate = useNavigate();
-
-
 
     const handleSearch = async (query: string) => {
         if (!query) {
@@ -48,27 +47,32 @@ const Admin = () => {
                 const result = await response.json();
                 if (response.ok) {
                     const uniqueTitles = new Set();
-                    const data = result.data.filter((item: Hymnal) => {
-                        if (!uniqueTitles.has(item.title)) {
-                            uniqueTitles.add(item.title);
-                            return true;
-                        }
-                        return false;
-                    }).map((item: Hymnal) => ({
-                        title: item.title,
-                        slug: item.slug,
-                        password: item.password,
-                        passwordEdit: item.passwordEdit,
-                    }));
+                    const data = result.data
+                        .filter((item: Hymnal) => {
+                            if (item && item.title && !uniqueTitles.has(item.title)) {
+                                uniqueTitles.add(item.title);
+                                return true;
+                            }
+                            return false;
+                        })
+                        .map((item: Hymnal) => ({
+                            title: item.title,
+                            slug: item.slug,
+                            password: item.password,
+                            passwordEdit: item.passwordEdit,
+                        }));
                     setSuggestions(data);
                 } else {
                     console.error("Error fetching data:", result.error);
+                    setSuggestions([]);
                 }
             } else {
                 console.error("Error: Received non-JSON response");
+                setSuggestions([]);
             }
         } catch (error) {
             console.error("Error:", error);
+            setSuggestions([]);
         }
     };
     
@@ -99,7 +103,7 @@ const Admin = () => {
 
     const handleSubmitNavegate = () => {
         navigate(`/admin/crear`);
-    }
+    };
 
     return (
         <>
@@ -113,7 +117,7 @@ const Admin = () => {
             <Container className={classes.MultiSelect}>
                 <Autocomplete
                     placeholder="Selecciona Himnario O Crea uno Nuevo"
-                    data={suggestions.map((item) => item.title)}
+                    data={suggestions.map((item) => item.title).filter(Boolean)}
                     value={value}
                     onChange={(val) => {
                         setValue(val);
