@@ -16,9 +16,9 @@ const AppRoutes = () => (
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/admin" element={<Admin />} />
-                <Route path="/admin/:hymnalId" element={<EditarHimnario />} />
-                <Route path="/admin/:hymnalId/:hymnalId" element={<VerHimnario />} />
-                <Route path="/admin/:hymnalId/:hymnalId/edit" element={<EditHimno />} />
+                <Route path="/admin/:slug" element={<EditarHimnario />} />
+                <Route path="/admin/:slug/:hymnalId" element={<VerHimnario />} />
+                <Route path="/admin/:slug/:hymnalId/:edit" element={<EditHimno />} />
 
                 <Route path="/:hymnalId" element={<ListHymns />} />
                 <Route path="/:hymnalId/:hymnId" element={<ShowHymn />} />

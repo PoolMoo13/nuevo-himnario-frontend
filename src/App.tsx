@@ -18,7 +18,6 @@ export default function App({ children }: Props) {
           src="https://raw.githubusercontent.com/PoolMoo13/himnario-jovenes/master/public/logo192.png"
           height={40}
         />
-        <h3> Himnario 1 </h3>
       </Container>
     </header>
     <Container>

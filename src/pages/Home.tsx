@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 const ApiUrl = import.meta.env.VITE_API_URL;
 
-
 interface Hymnal {
     title: string;
     slug: string;
@@ -26,14 +25,23 @@ const Home = () => {
         }
 
         try {
-            const response = await fetch(`${ ApiUrl }?title=${query}`);
+            const response = await fetch(`${ApiUrl}?title=${query}`);
             const result = await response.json();
             if (response.ok) {
-                const data = result.data.map((item: Hymnal) => ({
-                    title: item.title,
-                    slug: item.slug,
-                    password: item.password
-                }));
+                const uniqueTitles = new Set();
+                const data = result.data
+                    .filter((item: Hymnal) => {
+                        if (item && item.title && !uniqueTitles.has(item.title)) {
+                            uniqueTitles.add(item.title);
+                            return true;
+                        }
+                        return false;
+                    })
+                    .map((item: Hymnal) => ({
+                        title: item.title,
+                        slug: item.slug,
+                        password: item.password,
+                    }));
                 setSuggestions(data);
             } else {
                 console.error('Error fetching data:', result.error);
