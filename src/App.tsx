@@ -1,4 +1,5 @@
 import "@mantine/core/styles.css";
+import '@mantine/tiptap/styles.css';
 import { MantineProvider, Container, Image } from "@mantine/core";
 import { theme } from "./theme";
 import classes from './Home.module.css';
