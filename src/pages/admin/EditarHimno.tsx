@@ -1,21 +1,29 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { EditorState, convertFromHTML, ContentState } from 'draft-js';
-import { Editor } from 'react-draft-wysiwyg';
-import { stateToHTML } from 'draft-js-export-html';
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { Button, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
+
+import { RichTextEditor, Link } from '@mantine/tiptap';
+import { useEditor } from '@tiptap/react';
+import Highlight from '@tiptap/extension-highlight';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import { Color } from '@tiptap/extension-color';
+import TextStyle from '@tiptap/extension-text-style';
+import Superscript from '@tiptap/extension-superscript';
+import SubScript from '@tiptap/extension-subscript';
+import Placeholder from '@tiptap/extension-placeholder';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const EditHimno: React.FC = () => {
   const [slugExists, setSlugExists] = useState(false);
-  const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty());
   const [titulo, setTitulo] = useState<string>('');
   const [nextId, setNextId] = useState<number | null>(null);
   const [ids, setIds] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [editorContent, setEditorContent] = useState('')
 
   const pathSegments = location?.pathname?.split("/") || [];
   const slugEdit = pathSegments[pathSegments.length - 3];
@@ -42,28 +50,14 @@ const EditHimno: React.FC = () => {
 
       const himno = data[0];
       setIds(himno._id);
-
-      const maxId = himno.hymnns?.length ? Math.max(...himno.hymnns.map((h: any) => h.id)) : 0;
+      const maxId = himno.hymnns?.length ? Math.max(...himno.hymnns.map(h => h.id)) : 0;
       setNextId(maxId + 1);
 
-      let tempTitulo = '';
-      let tempEditorState = EditorState.createEmpty();
-
-      if (!isNaN(Number(hymnId))) {
-        const existingHymn = himno.hymnns.find((hymn: any) => hymn.id === Number(hymnId));
-
-        if (existingHymn) {
-          tempTitulo = existingHymn.title;
-          if (existingHymn.lyrics) {
-            const contentBlock = convertFromHTML(existingHymn.lyrics);
-            const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks, contentBlock.entityMap);
-            tempEditorState = EditorState.createWithContent(contentState);
-          }
-        }
+      const existingHymn = hymnId && himno.hymnns.find(hymn => hymn.id === Number(hymnId));
+      if (existingHymn) {
+        setTitulo(existingHymn.title);
+        setEditorContent(existingHymn.lyrics || '');
       }
-
-      setTitulo(tempTitulo);
-      setEditorState(tempEditorState);
     } catch (error) {
       console.error("Error al obtener himnos:", error);
     } finally {
@@ -110,61 +104,36 @@ const EditHimno: React.FC = () => {
   }, [titulo, checkSlug]);
 
   const handleButtonClick = async () => {
-    const options = {
-      inlineStyleFn: (styles) => {
-        const key = 'color-';
-        const color = styles.find((value) => value.startsWith(key));
-  
-        if (color) {
-          return {
-            element: 'span',
-            style: {
-              color: color.replace(key, ''),
-            },
-          };
-        }
-      },
-    };
-  
-    const htmlContent = stateToHTML(editorState.getCurrentContent(), options);
-    console.log("HTML content with styles:", htmlContent);
-  
-    await actualizarHimno(htmlContent);
+    await actualizarHimno();
   };
-  
 
-  const actualizarHimno = async (htmlContent) => {
-    if (!ids || !nextId) return;
-  
+
+  const actualizarHimno = async () => {
+    if (!ids || !nextId) return;    
+
     setLoading(true);
-  
-    const updatedHymn = { id: nextId, title: titulo, lyrics: htmlContent };
-    console.log("Contenido de htmlContent:", htmlContent);
-  
+
+    const updatedHymn = { id: nextId, title: titulo, lyrics: editorContent };
     const hymns = JSON.parse(localStorage.getItem('hymnns') || '[]');
     const hymnIndex = hymns.findIndex((hymn) => hymn.id === Number(hymnId));
-  
+
     if (hymnIndex >= 0) {
-      hymns[hymnIndex] = { ...hymns[hymnIndex], title: titulo, lyrics: htmlContent };
+      hymns[hymnIndex] = { ...hymns[hymnIndex], title: titulo, lyrics: editorContent };
     } else {
       hymns.push(updatedHymn);
     }
-  
+
     try {
       const res = await fetch(`${apiUrl}/${ids}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: { hymnns: hymns } }),
       });
-  
+
       if (!res.ok) throw new Error('Error al actualizar el himno');
-  
       const responseData = await res.json();
       setTitulo(responseData.hymnns[0].title);
-      setEditorState(EditorState.createWithContent(ContentState.createFromBlockArray(
-        convertFromHTML(responseData.hymnns[0].lyrics).contentBlocks
-      )));
-  
+      setEditorContent(responseData.hymnns[0].lyrics);
       localStorage.setItem('hymnns', JSON.stringify(hymns));
     } catch (error) {
       console.error("Error actualizando himno:", error);
@@ -172,10 +141,22 @@ const EditHimno: React.FC = () => {
       setLoading(false);
     }
   };
-  
+
+  const editor = useEditor({
+    extensions: [StarterKit, Underline, Link, Superscript, SubScript, Highlight, TextAlign.configure({ types: ['heading', 'paragraph'] }), Placeholder.configure({ placeholder: 'Edite o Cree su himno' }), Color, TextStyle],
+    content: editorContent,
+    onUpdate: ({ editor }) => setEditorContent(editor.getHTML()),
+  });
+
+  useEffect(() => {
+    if (editor && editorContent) {
+      editor.commands.setContent(editorContent);
+    }
+  }, [editor, editorContent]);
+
 
   return (
-    <div style={{ width: '90%', margin: '0 auto', padding: '10px' }}>
+    <>
       <TextInput
         placeholder="Título del himno"
         withAsterisk
@@ -185,22 +166,74 @@ const EditHimno: React.FC = () => {
         onChange={(event) => setTitulo(event.currentTarget.value)}
         error={form.errors.title}
       />
-      <div style={{ padding: '10px', minHeight: '400px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-        <Editor
-          editorState={editorState}
-          onEditorStateChange={setEditorState}
-          toolbar={{
-            options: ["inline", "blockType", "fontSize", "fontFamily", "list", "textAlign", "colorPicker", "remove", "history"],
-            inline: {
-              inDropdown: false,
-              options: ["bold", "italic", "underline", "strikethrough", "monospace"],
-            },
-          }}
-          toolbarClassName="custom-toolbar-class"
-          wrapperClassName="editor-wrapper"
-          editorClassName="editor-class"
+      <RichTextEditor editor={editor}>
+        <RichTextEditor.Toolbar sticky stickyOffset={60}>
+
+          <RichTextEditor.ControlsGroup>
+            <RichTextEditor.Bold />
+            <RichTextEditor.Italic />
+            <RichTextEditor.Underline />
+            <RichTextEditor.Strikethrough />
+            <RichTextEditor.ClearFormatting />
+            <RichTextEditor.Highlight />
+            <RichTextEditor.Code />
+          </RichTextEditor.ControlsGroup>
+
+          <RichTextEditor.ControlsGroup>
+            <RichTextEditor.H1 />
+            <RichTextEditor.H2 />
+            <RichTextEditor.H3 />
+            <RichTextEditor.H4 />
+          </RichTextEditor.ControlsGroup>
+
+          <RichTextEditor.ControlsGroup>
+            <RichTextEditor.Blockquote />
+            <RichTextEditor.Hr />
+            <RichTextEditor.BulletList />
+            <RichTextEditor.OrderedList />
+            <RichTextEditor.Subscript />
+            <RichTextEditor.Superscript />
+          </RichTextEditor.ControlsGroup>
+
+          <RichTextEditor.ControlsGroup>
+            <RichTextEditor.Link />
+            <RichTextEditor.Unlink />
+          </RichTextEditor.ControlsGroup>
+
+          <RichTextEditor.ControlsGroup>
+            <RichTextEditor.AlignLeft />
+            <RichTextEditor.AlignCenter />
+            <RichTextEditor.AlignJustify />
+            <RichTextEditor.AlignRight />
+          </RichTextEditor.ControlsGroup>
+
+          <RichTextEditor.ControlsGroup>
+            <RichTextEditor.Undo />
+            <RichTextEditor.Redo />
+          </RichTextEditor.ControlsGroup>
+
+          <RichTextEditor.ColorPicker
+          colors={[
+            '#25262b',
+            '#868e96',
+            '#fa5252',
+            '#e64980',
+            '#be4bdb',
+            '#7950f2',
+            '#4c6ef5',
+            '#228be6',
+            '#15aabf',
+            '#12b886',
+            '#40c057',
+            '#82c91e',
+            '#fab005',
+            '#fd7e14',
+          ]}
         />
-      </div>
+        </RichTextEditor.Toolbar>
+
+        <RichTextEditor.Content />
+      </RichTextEditor>
       <Button
         variant="light"
         onClick={handleButtonClick}
@@ -210,7 +243,8 @@ const EditHimno: React.FC = () => {
       >
         Actualizar
       </Button>
-    </div>
+    </>
+
   );
 };
 
