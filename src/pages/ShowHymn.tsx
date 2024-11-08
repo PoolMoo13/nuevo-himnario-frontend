@@ -1,6 +1,7 @@
 import { Anchor, Breadcrumbs, Button } from '@mantine/core';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import './ShowHymnn.css';
 
 interface Hymn {
     id: string;
@@ -49,7 +50,7 @@ const ShowHymn = () => {
                 {hymn && <Anchor>{hymn.title}</Anchor>}
             </Breadcrumbs>
             {hymn ? (
-                <div dangerouslySetInnerHTML={{ __html: hymn.lyrics }} style={{ fontSize: `${fontSize}px`, paddingTop: '10px'}} />
+                <div className='HymnContainer' dangerouslySetInnerHTML={{ __html: hymn.lyrics }} style={{ fontSize: `${fontSize}px`, paddingTop: '10px', textAlign: 'center' }} />
             ) : (
                 <p>El himno no está disponible.</p>
             )}

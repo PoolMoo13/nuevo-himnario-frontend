@@ -9,6 +9,7 @@ import Admin from "./pages/admin/Admin";
 import EditarHimnario from "./pages/admin/EditarHimnario";
 import VerHimnario from "./pages/admin/VerHimnario";
 import EditHimno from "./pages/admin/EditarHimno";
+import { NotFoundPage } from "./pages/Error404/Page404";
 
 const AppRoutes = () => (
     <App>
@@ -22,6 +23,8 @@ const AppRoutes = () => (
 
                 <Route path="/:hymnalId" element={<ListHymns />} />
                 <Route path="/:hymnalId/:hymnId" element={<ShowHymn />} />
+
+                <Route path="*" element={<NotFoundPage/>} />
             </Routes>
         </BrowserRouter>
     </App>
