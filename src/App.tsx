@@ -12,20 +12,18 @@ interface Props {
 export default function App({ children }: Props) {
 
   return <MantineProvider theme={theme}>
-
-    <header className={classes.header}>
-      <Container className={classes.inner}>
-        <Image
-          src="https://raw.githubusercontent.com/PoolMoo13/himnario-jovenes/master/public/logo192.png"
-          height={40}
-        />
+      <header className={classes.header}>
+        <Container className={classes.inner}>
+          <Image
+            src="https://raw.githubusercontent.com/PoolMoo13/himnario-jovenes/master/public/logo192.png"
+            height={40}
+          />
+        </Container>
+      </header>
+      <Container>
+        {
+          children
+        }
       </Container>
-    </header>
-    <Container>
-    {
-      children
-    }
-    </Container>
-
   </MantineProvider>;
 }
