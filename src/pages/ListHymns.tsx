@@ -14,6 +14,9 @@ interface Hymnal {
     hymnns: Hymn[];
 }
 
+const apiUrl = import.meta.env.VITE_API_URL;
+
+
 const ListHymns = () => {
     const [hymns, setHymns] = useState<Hymn[]>([]);
     localStorage.setItem('hymns', JSON.stringify(hymns));    
@@ -25,7 +28,7 @@ const ListHymns = () => {
             if (!hymnalId) {
                 return;
             }  
-            const url = `http://localhost:3001/api/hymnals/search/slug?slug=${hymnalId}`;
+            const url = `${apiUrl}/search/slug?slug=${hymnalId}`;
             const res = await fetch(url);
             const { data } = await res.json();
 

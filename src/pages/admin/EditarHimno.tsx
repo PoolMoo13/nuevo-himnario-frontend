@@ -25,6 +25,13 @@ import TableRow from '@tiptap/extension-table-row'
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
+interface Hymn {
+    _id: string;
+    title: string;
+    lyrics: string;
+    id: number;
+}
+
 const EditHimno: React.FC = () => {
   const [slugExists, setSlugExists] = useState(false);
   const [titulo, setTitulo] = useState<string>('');
@@ -63,10 +70,10 @@ const EditHimno: React.FC = () => {
 
       const himno = data[0];
       setIds(himno._id);
-      const maxId = himno.hymnns?.length ? Math.max(...himno.hymnns.map(h => h.id)) : 0;
+      const maxId = himno.hymnns?.length ? Math.max(...himno.hymnns.map((h: Hymn) => h.id)) : 0;
       setNextId(maxId + 1);
 
-      const existingHymn = hymnId && himno.hymnns.find(hymn => hymn.id === Number(hymnId));
+      const existingHymn = hymnId && himno.hymnns.find((hymn: Hymn) => hymn.id === Number(hymnId));
       if (existingHymn) {
         setTitulo(existingHymn.title);
         setEditorContent(existingHymn.lyrics || '');
@@ -95,7 +102,7 @@ const EditHimno: React.FC = () => {
 
       if (response.ok && result.data.length > 0) {
         const hymnsInHimnario = result.data[0].hymnns || [];
-        const titleExists = hymnsInHimnario.some((hymn: any) => hymn.title === titulo && hymn._id !== hymnId);
+        const titleExists = hymnsInHimnario.some((hymn: Hymn) => hymn.title === titulo && hymn._id !== hymnId);
 
         setSlugExists(titleExists);
         setIsButtonDisabled(titleExists);
@@ -129,7 +136,7 @@ const EditHimno: React.FC = () => {
 
     const updatedHymn = { id: nextId, title: titulo, lyrics: editorContent };
     const hymns = JSON.parse(localStorage.getItem('hymnns') || '[]');
-    const hymnIndex = hymns.findIndex((hymn) => hymn.id === Number(hymnId));
+    const hymnIndex = hymns.findIndex((hymn: Hymn) => hymn.id === Number(hymnId));
 
     if (hymnIndex >= 0) {
       hymns[hymnIndex] = { ...hymns[hymnIndex], title: titulo, lyrics: editorContent };
