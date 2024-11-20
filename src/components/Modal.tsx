@@ -1,8 +1,22 @@
-// ModalSinPermisos.jsx
-import React from "react";
 import { Modal, PasswordInput, Group, Button, Text } from "@mantine/core";
 
-const ModalSinPermisos = ({ opened, onClose, onSubmit, value, password, setPassword }) => {
+interface ModalSinPermisosProps {
+    opened: boolean;
+    onClose: () => void;
+    onSubmit: () => void;
+    value: string;
+    password: string;
+    setPassword: (value: string) => void;
+}
+
+const ModalSinPermisos: React.FC<ModalSinPermisosProps> = ({
+    opened,
+    onClose,
+    onSubmit,
+    value,
+    password,
+    setPassword,
+}) => {
     return (
         <Modal
             opened={opened}

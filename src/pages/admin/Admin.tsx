@@ -89,7 +89,7 @@ const Admin = () => {
         if (savedPassword === password) {
             const slug = getSlug();
             if (slug) {
-                sessionStorage.setItem('pwd', true);
+                sessionStorage.setItem('pwd', 'true');
                 navigate(`/admin/${slug}`);
             } else {
                 alert("Slug not found");
