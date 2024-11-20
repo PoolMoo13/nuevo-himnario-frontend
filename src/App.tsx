@@ -15,7 +15,7 @@ export default function App({ children }: Props) {
       <header className={classes.header}>
         <Container className={classes.inner}>
           <Image
-            src="https://raw.githubusercontent.com/PoolMoo13/himnario-jovenes/master/public/logo192.png"
+            src='../public/logo192.png'
             height={40}
           />
         </Container>

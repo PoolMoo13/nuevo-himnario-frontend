@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from '@mantine/form';
-import { Button, Group, TextInput, PasswordInput, Container, Title, Paper, Stack, Alert } from "@mantine/core";
+import { Button, Group, TextInput, PasswordInput, Container, Title, Paper, Stack, Alert, Skeleton } from "@mantine/core";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IconAlertCircle } from '@tabler/icons-react'; 
+import ModalSinPermisos from "../../components/Modal";
 
 interface FormValues {
   title: string;
@@ -25,6 +26,15 @@ const EditarHimnario = () => {
   const [originalSlug, setOriginalSlug] = useState('');
   const [alertVisible, setAlertVisible] = useState(false); 
 
+  const [opened, setOpened] = useState(false); 
+  const [password, setPassword] = useState(""); 
+  const [value, setValue] = useState(""); 
+  const [sessionValid, setSessionValid] = useState(false);
+  const [contra, setContra] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const slugRef = useRef('');
+
   const form = useForm({
     initialValues: {
       title: '',
@@ -45,12 +55,36 @@ const EditarHimnario = () => {
   });
 
   useEffect(() => {
+    const session = sessionStorage.getItem('pwd');
+    if (session !== "true") {
+      setOpened(true); 
+      setValue(`${slugEdit}`);
+    } else {
+      setSessionValid(true);
+    }
+  }, []);
+
+  const handleSubmitPassword = () => {
+    const correctPassword = `${contra}`; 
+
+    if (password === correctPassword) {
+      sessionStorage.setItem('pwd', 'true'); 
+      setOpened(false); 
+      setSessionValid(true);
+    } else {
+      alert("Contraseña incorrecta");
+    }
+  };
+
+  useEffect(() => {
     setAlertVisible(false); 
   }, []);
 
   useEffect(() => {
     if (slugEdit && slugEdit !== 'crear') {
       handleSearch(slugEdit);
+    } else {
+      setLoading(false);
     }
   }, [slugEdit]);
 
@@ -58,29 +92,37 @@ const EditarHimnario = () => {
     const createSlug = (title: string) =>
       title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const newSlug = createSlug(form.values.title);
-    form.setFieldValue('slug', newSlug);
+    if (slugEdit === 'crear') {
+      form.setFieldValue('slug', newSlug);
+    }
+    slugRef.current = newSlug;
   }, [form.values.title]);
 
   useEffect(() => {
-    if (form.values.slug && form.values.slug !== originalSlug) {
+    if (form.values.slug && form.values.slug !== originalSlug && !loading) {
       const debounceTimeout = setTimeout(() => {
         checkSlug(form.values.slug);
       }, 500);
-
+  
       return () => clearTimeout(debounceTimeout);
     }
-  }, [form.values.slug]);
+  }, [form.values.slug, loading]);
+  
 
   const handleSearch = async (slug: string) => {
     if (!slug) return;
+  
     try {
       const response = await fetch(`${ApiUrl}/search/slug?slug=${slug}`);
       const contentType = response.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
         const result = await response.json();
         if (response.ok && result.data.length > 0) {
-          form.setValues(result.data[0]);
+          const { passwordEdit, password, ...rest } = result.data[0];
+          form.setValues({...rest, password, passwordEdit});
+          setContra(passwordEdit);
           setOriginalSlug(result.data[0].slug);
+          form.setFieldValue('slug', result.data[0].slug); 
         } else {
           console.error("Error fetching data:", result.error);
         }
@@ -89,8 +131,11 @@ const EditarHimnario = () => {
       }
     } catch (error) {
       console.error("Syntax error:", error);
+    } finally {
+      setLoading(false); 
     }
   };
+  
 
   const checkSlug = async (slug: string) => {
     if (!slug) return;
@@ -100,15 +145,15 @@ const EditarHimnario = () => {
       const result = await response.json();
       if (response.ok && result.data.length > 0) {
         setSlugExists(true);
-        form.validateField('slug');
       } else {
         setSlugExists(false);
-        form.validateField('slug');
       }
+      form.validateField('slug');
     } catch (error) {
       console.error("Error checking slug:", error);
+    } finally {
+      setCheckingSlug(false);
     }
-    setCheckingSlug(false);
   };
   
 
@@ -121,7 +166,6 @@ const EditarHimnario = () => {
     const method = slugEdit === 'crear' ? 'POST' : 'PATCH';
     const url = slugEdit === 'crear' ? `${ApiUrl}` : `${ApiUrl}/${values._id}`;
     
-    // Payload solo incluye los campos necesarios
     const payload = slugEdit === 'crear' ? {
       slug: values.slug,
       title: values.title,
@@ -165,6 +209,30 @@ const EditarHimnario = () => {
       console.error("Error during submission:", error);
     }
   };
+
+  if (loading) {
+    return (
+      <>
+        <Skeleton height={50} circle mb="xl" />
+        <Skeleton height={8} radius="xl" />
+        <Skeleton height={8} mt={6} radius="xl" />
+        <Skeleton height={8} mt={6} width="70%" radius="xl" />
+      </>
+    );
+  }
+
+  if (!sessionValid) {
+    return (
+      <ModalSinPermisos
+        opened={opened}
+        onClose={() => setOpened(false)}
+        onSubmit={handleSubmitPassword}
+        value={value}
+        password={password}
+        setPassword={setPassword}
+      />
+    );
+  }
 
 
   return (
