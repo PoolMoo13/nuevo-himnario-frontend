@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from '@mantine/form';
-import { Button, Group, TextInput, PasswordInput, Container, Title, Paper, Stack, Alert } from "@mantine/core";
+import { Button, Group, TextInput, PasswordInput, Container, Title, Paper, Stack, Alert, Skeleton } from "@mantine/core";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IconAlertCircle } from '@tabler/icons-react'; 
 import ModalSinPermisos from "../../components/Modal";
@@ -211,7 +211,14 @@ const EditarHimnario = () => {
   };
 
   if (loading) {
-    return <div>Cargando datos del himnario...</div>;
+    return (
+      <>
+        <Skeleton height={50} circle mb="xl" />
+        <Skeleton height={8} radius="xl" />
+        <Skeleton height={8} mt={6} radius="xl" />
+        <Skeleton height={8} mt={6} width="70%" radius="xl" />
+      </>
+    );
   }
 
   if (!sessionValid) {
