@@ -21,10 +21,11 @@ const AppRoutes = () => (
                 <Route path="/admin/:slug/:hymnalId" element={<VerHimnario />} />
                 <Route path="/admin/:slug/:hymnalId/:edit" element={<EditHimno />} />
 
-                <Route path="/:hymnalId" element={<ListHymns />} />
-                <Route path="/:hymnalId/:hymnId" element={<ShowHymn />} />
+                <Route path="no-found" element={<NotFoundPage/>} />
 
-                <Route path="*" element={<NotFoundPage/>} />
+                <Route path="/:hymnalId/:hymnId" element={<ShowHymn />} />
+                <Route path="/:hymnalId" element={<ListHymns />} />
+
             </Routes>
         </BrowserRouter>
     </App>

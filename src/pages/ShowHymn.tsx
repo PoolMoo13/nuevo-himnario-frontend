@@ -57,7 +57,8 @@ const ShowHymn = () => {
 
             <Button
                 onClick={() => handlerFontSize(2)}
-                variant='light'
+                variant='filled'
+                color="rgba(84, 117, 214, 1)"
                 radius='md'
                 style={{
                     position: 'fixed',
@@ -70,7 +71,8 @@ const ShowHymn = () => {
             </Button>
             <Button
                 onClick={() => handlerFontSize(-2)}
-                variant='light'
+                variant='filled'
+                color="rgba(84, 117, 214, 1)"
                 radius='md'
                 style={{
                     position: 'fixed',
