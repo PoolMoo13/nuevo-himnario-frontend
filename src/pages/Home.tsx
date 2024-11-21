@@ -1,8 +1,9 @@
-import { Autocomplete, Button, Container, Group, Image, Modal, PasswordInput, Text } from "@mantine/core";
+import { Autocomplete, Button, Container, Image } from "@mantine/core";
 import { useDisclosure } from '@mantine/hooks';
 import classes from './Home.module.css';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ModalSinPermisos from "../components/Modal";
 
 const ApiUrl = import.meta.env.VITE_API_URL;
 
@@ -67,6 +68,7 @@ const Home = () => {
         if (savedPassword === password) {
             const slug = getSlug();
             if (slug) {
+                sessionStorage.setItem('pwd', `${slug}`);
                 navigate(`/${slug}`);
             } else {
                 alert('Slug not found');
@@ -96,33 +98,14 @@ const Home = () => {
                     }}
                 />
             </Container>
-            <Modal
+            <ModalSinPermisos
                 opened={opened}
                 onClose={close}
-                title="Contraseña requerida"
-                centered
-                size="md"
-            >
-                <Text size="sm" mt="md">
-                    Ingrese la contraseña para: <strong>{value}</strong>
-                </Text>
-
-                <PasswordInput
-                    variant="filled"
-                    size="md"
-                    radius="md"
-                    placeholder="Contraseña"
-                    mt="lg"
-                    value={password}
-                    onChange={(event) => setPassword(event.currentTarget.value)}
-                    required
-                />
-
-                <Group mt="xl">
-                    <Button variant="outline" color="red" onClick={close}>Cancelar</Button>
-                    <Button variant="filled" color="blue" onClick={handleSubmitPassword}>OK</Button>
-                </Group>
-            </Modal>
+                onSubmit={handleSubmitPassword}
+                value={value}
+                password={password}
+                setPassword={setPassword}
+            />
 
             <Container className={classes.Button}>
                 <Button

@@ -56,7 +56,7 @@ const EditarHimnario = () => {
 
   useEffect(() => {
     const session = sessionStorage.getItem('pwd');
-    if (session !== "true") {
+    if (session !== `${slugEdit}`) {
       setOpened(true); 
       setValue(`${slugEdit}`);
     } else {
@@ -65,10 +65,8 @@ const EditarHimnario = () => {
   }, []);
 
   const handleSubmitPassword = () => {
-    const correctPassword = `${contra}`; 
-
-    if (password === correctPassword) {
-      sessionStorage.setItem('pwd', 'true'); 
+    if (password === `${contra}`) {
+      sessionStorage.setItem('pwd', `${slugEdit}`); 
       setOpened(false); 
       setSessionValid(true);
     } else {
@@ -123,6 +121,9 @@ const EditarHimnario = () => {
           setContra(passwordEdit);
           setOriginalSlug(result.data[0].slug);
           form.setFieldValue('slug', result.data[0].slug); 
+          if (!passwordEdit || passwordEdit.trim() === "") {
+            setSessionValid(true);
+        }
         } else {
           console.error("Error fetching data:", result.error);
         }
