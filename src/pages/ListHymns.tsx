@@ -19,7 +19,6 @@ interface Hymnal {
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const ListHymns = () => {
-    const slugEdit = location.pathname.replace(/\/$/, "").split("/").pop();
     const navigate = useNavigate();
     const { hymnalId } = useParams();
 
@@ -80,7 +79,7 @@ const ListHymns = () => {
             setSessionValid(true);
         }
         if (password === contra) {
-            sessionStorage.setItem("pwd", `${slugEdit}`);
+            sessionStorage.setItem("pwd", `${hymnalId}`);
             setOpened(false);
             setSessionValid(true);
         } else {
@@ -95,7 +94,7 @@ const ListHymns = () => {
     };
 
     useEffect(() => {
-        const session = sessionStorage.getItem("pwd") === `${slugEdit}`;
+        const session = sessionStorage.getItem("pwd") === `${hymnalId}`;
 
         if (session) {
             setSessionValid(true);
@@ -103,12 +102,12 @@ const ListHymns = () => {
             setOpened(true);
         }
 
-        if (slugEdit && slugEdit !== "crear") {
-            fetchHymnalData(slugEdit);
+        if (hymnalId && hymnalId !== "crear") {
+            fetchHymnalData(hymnalId);
         } else {
             setLoading(false);
         }
-    }, [slugEdit]);
+    }, [hymnalId]);
 
     useEffect(() => {
         fetchHymns();
@@ -130,7 +129,7 @@ const ListHymns = () => {
             <ModalSinPermisos
                 opened={opened}
                 onClose={() => setOpened(false)}
-                value={slugEdit || ""}
+                value={hymnalId || ""}
                 onSubmit={handleSubmitPassword}
                 password={password}
                 setPassword={setPassword}
