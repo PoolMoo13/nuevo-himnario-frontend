@@ -19,7 +19,7 @@ const ApiUrl = import.meta.env.VITE_API_URL;
 const EditarHimnario = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const slugEdit = location.pathname.split("/").pop();
+  const slugEdit = location.pathname.replace(/\/$/, "").split("/").pop();
 
   const [slugExists, setSlugExists] = useState(false);
   const [checkingSlug, setCheckingSlug] = useState(false);

@@ -19,7 +19,7 @@ interface Hymnal {
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const ListHymns = () => {
-    const slugEdit = location.pathname.split("/").pop();
+    const slugEdit = location.pathname.replace(/\/$/, "").split("/").pop();
     const navigate = useNavigate();
     const { hymnalId } = useParams();
 
@@ -130,7 +130,7 @@ const ListHymns = () => {
             <ModalSinPermisos
                 opened={opened}
                 onClose={() => setOpened(false)}
-                value=""
+                value={slugEdit || ""}
                 onSubmit={handleSubmitPassword}
                 password={password}
                 setPassword={setPassword}
