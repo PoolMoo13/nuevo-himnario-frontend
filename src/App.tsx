@@ -15,7 +15,7 @@ export default function App({ children }: Props) {
       <header className={classes.header}>
         <Container className={classes.inner}>
           <Image
-            src='/public/logo192.png'
+            src='/logo192.png'
             height={40}
           />
         </Container>
