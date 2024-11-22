@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 
 import App from "./App";
@@ -13,7 +13,6 @@ import { NotFoundPage } from "./pages/Error404/Page404";
 
 const AppRoutes = () => (
     <App>
-        <BrowserRouter>
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/admin" element={<Admin />} />
@@ -28,7 +27,6 @@ const AppRoutes = () => (
 
                 <Route path="*" element={<NotFoundPage/>} />
             </Routes>
-        </BrowserRouter>
     </App>
 );
 
