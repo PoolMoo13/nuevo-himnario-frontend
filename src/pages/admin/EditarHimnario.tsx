@@ -90,6 +90,7 @@ const EditarHimnario = () => {
       title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const newSlug = createSlug(form.values.title);
     if (slug === 'crear') {
+      setSessionValid(true);
       form.setFieldValue('slug', newSlug);
     }
     slugRef.current = newSlug;
@@ -225,7 +226,7 @@ const EditarHimnario = () => {
     return (
       <ModalSinPermisos
         opened={opened}
-        onClose={() => setOpened(false)}
+        onClose={() => { setOpened(false); navigate('/admin'); }}
         onSubmit={handleSubmitPassword}
         value={value}
         password={password}
