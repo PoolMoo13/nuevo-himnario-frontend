@@ -128,7 +128,7 @@ const ListHymns = () => {
         return (
             <ModalSinPermisos
                 opened={opened}
-                onClose={() => setOpened(false)}
+                onClose={() => { setOpened(false); navigate('/'); }}
                 value={hymnalId || ""}
                 onSubmit={handleSubmitPassword}
                 password={password}
