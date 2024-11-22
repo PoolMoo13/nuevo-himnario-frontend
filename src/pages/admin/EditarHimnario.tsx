@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from '@mantine/form';
 import { Button, Group, TextInput, PasswordInput, Container, Title, Paper, Stack, Alert, Skeleton } from "@mantine/core";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IconAlertCircle } from '@tabler/icons-react'; 
 import ModalSinPermisos from "../../components/Modal";
 
@@ -18,8 +18,7 @@ const ApiUrl = import.meta.env.VITE_API_URL;
 
 const EditarHimnario = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const slugEdit = location.pathname.split("/").pop();
+  const { slug } = useParams();
 
   const [slugExists, setSlugExists] = useState(false);
   const [checkingSlug, setCheckingSlug] = useState(false);
@@ -56,19 +55,17 @@ const EditarHimnario = () => {
 
   useEffect(() => {
     const session = sessionStorage.getItem('pwd');
-    if (session !== "true") {
+    if (session !== `${slug}`) {
       setOpened(true); 
-      setValue(`${slugEdit}`);
+      setValue(`${slug}`);
     } else {
       setSessionValid(true);
     }
   }, []);
 
   const handleSubmitPassword = () => {
-    const correctPassword = `${contra}`; 
-
-    if (password === correctPassword) {
-      sessionStorage.setItem('pwd', 'true'); 
+    if (password === `${contra}`) {
+      sessionStorage.setItem('pwd', `${slug}`); 
       setOpened(false); 
       setSessionValid(true);
     } else {
@@ -81,18 +78,18 @@ const EditarHimnario = () => {
   }, []);
 
   useEffect(() => {
-    if (slugEdit && slugEdit !== 'crear') {
-      handleSearch(slugEdit);
+    if (slug && slug !== 'crear') {
+      handleSearch(slug);
     } else {
       setLoading(false);
     }
-  }, [slugEdit]);
+  }, [slug]);
 
   useEffect(() => {
     const createSlug = (title: string) =>
       title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const newSlug = createSlug(form.values.title);
-    if (slugEdit === 'crear') {
+    if (slug === 'crear') {
       form.setFieldValue('slug', newSlug);
     }
     slugRef.current = newSlug;
@@ -123,6 +120,9 @@ const EditarHimnario = () => {
           setContra(passwordEdit);
           setOriginalSlug(result.data[0].slug);
           form.setFieldValue('slug', result.data[0].slug); 
+          if (!passwordEdit || passwordEdit.trim() === "") {
+            setSessionValid(true);
+        }
         } else {
           console.error("Error fetching data:", result.error);
         }
@@ -163,10 +163,10 @@ const EditarHimnario = () => {
       return; 
     }
 
-    const method = slugEdit === 'crear' ? 'POST' : 'PATCH';
-    const url = slugEdit === 'crear' ? `${ApiUrl}` : `${ApiUrl}/${values._id}`;
+    const method = slug === 'crear' ? 'POST' : 'PATCH';
+    const url = slug === 'crear' ? `${ApiUrl}` : `${ApiUrl}/${values._id}`;
     
-    const payload = slugEdit === 'crear' ? {
+    const payload = slug === 'crear' ? {
       slug: values.slug,
       title: values.title,
       description: values.description,
@@ -201,7 +201,7 @@ const EditarHimnario = () => {
       setAlertVisible(false); 
       await handleSearch(values.slug);
 
-      const newPath = location.pathname.replace(slugEdit === 'crear' ? 'crear' : originalSlug, `${values.slug}/hymnns`);
+      const newPath = location.pathname.replace(slug === 'crear' ? 'crear' : originalSlug, `${values.slug}/hymnns`);
       navigate(newPath, { replace: true });
       
 
@@ -239,7 +239,7 @@ const EditarHimnario = () => {
     <Container size="sm" my="xl">
       <Paper shadow="xl" radius="md" p="lg">
         <Title order={2} mb="lg" style={{ color: '#3b3b3b', textAlign: 'center' }}>
-          {slugEdit === 'crear' ? 'Crear Himnario' : 'Editar Himnario'}
+          {slug === 'crear' ? 'Crear Himnario' : 'Editar Himnario'}
         </Title>
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <Stack gap="md">
