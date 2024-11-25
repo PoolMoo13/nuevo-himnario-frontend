@@ -28,6 +28,7 @@ const ListHymns = () => {
     const [contra, setContra] = useState("");
     const [loading, setLoading] = useState(true);
     const [hymns, setHymns] = useState<Hymn[]>([]);
+    localStorage.setItem('hymns', JSON.stringify(hymns));
 
     const fetchHymns = async () => {
         try {
