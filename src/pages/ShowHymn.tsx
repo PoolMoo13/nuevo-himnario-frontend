@@ -15,11 +15,8 @@ const ShowHymn = () => {
 
     const hymnsData = localStorage.getItem('hymns');
     const hymns: Hymn[] = hymnsData ? JSON.parse(hymnsData) : [];
-
     const { hymnalId, hymnId } = useParams<{ hymnalId: string, hymnId: string }>();
-
     const hymn = hymns.find(h => h.id.toString() === hymnId);
-
 
     if (!hymn || !hymn.lyrics) {
         console.error(`Himno con ID ${hymnId} no encontrado o sin letra.`);
